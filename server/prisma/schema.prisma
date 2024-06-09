@@ -1,0 +1,298 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// -----------------------Changes record-------------------------------
+// PatientSSN of type String is REPLACED by patientID of type Int.
+// More fields added for Treatment, Diagnosis
+// Medications model added (related to the Treatment model)..each treatment plan could require more than one medication
+// *imagingResults is related to a specific diagnosis record*--not sure about it--
+// ---------------------------Notes------------------------------------
+// the imaging techniques commonly used in dental clinics include X-rays of various types
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  patientID           Int                   @id @default(autoincrement())
+  PatientSSN          String                @unique
+  fName               String
+  lName               String
+  birthDate           DateTime
+  age                 Int
+  gender              String
+  // city                String
+  // street              String
+  address             String
+  phone               String
+  email               String                @unique
+  Smoker              Boolean
+  alcoholIntake       Boolean
+  bloodGroup          String
+  InsuranceCompany    String                @default("None")
+  InsuranceCoverage   String                @default("None")
+  patientProfile      ProfileLogin?
+  // foodAllergies       FoodAllergies[]
+  // medicationAllergies MedicationAllergies[]
+  allergies           Allergies[]       
+  chronicDiseases     ChronicDisease[]       
+  treatmentPlan       Treatment[]
+  imagingResults      ImagingResults[]
+  MedicalConditions   Diagnosis[]
+  // invoicesPaid        Invoice[]
+  visits              Visit[]
+  procedures          Procedure[]
+}
+
+model Allergies {
+  id            Int      @id @default(autoincrement())
+  // medicationAllergies String?
+  // foodAllergies       String?
+  allergySource String
+  patient       Patient  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId     Int      @unique
+}
+model ChronicDisease {
+  id            Int      @id @default(autoincrement())
+  disease       String
+  patient       Patient  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId     Int      @unique
+}
+
+// model MedicationAllergies {
+//   medicationAllergies String
+//   MedicationAllergies Patient @relation(fields: [patientId], references: [patientID])
+//   patientId           Int     @unique
+// }
+
+// model FoodAllergies {
+//   foodAllergies String
+//   FoodAllergies Patient @relation(fields: [patientId], references: [patientID])
+//   patientId     Int     @unique
+// }
+
+model Diagnosis {
+  DiagnosisID       Int     @id @default(autoincrement())
+  AffectedArea      String //Maxillary Anterior, Mandibular Molars, Right Premolars, Left Canines,...
+  diagnosis         String //Dental Caries (Cavity), Gingivitis, Periodontitis, Malocclusion, Abscess
+  Description       String
+  diagnosedDate     DateTime @default(now())
+  imagingResults    ImagingResults[]
+  MedicalConditions Patient  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId         Int      
+  Diagnose          Dentist  @relation(fields: [DentistSsn], references: [DentistSSN], onDelete: Cascade)
+  DentistSsn        String 
+  visit             Visit[]
+  treatments        Treatment[]
+  procedures        Procedure[]
+}
+
+model Treatment {
+  TreatmentID    Int     @id @default(autoincrement())
+  TreatmentType  String //fillings, extractions, cleanings,...
+  Description    String
+  // Cost           Float
+  StartDate      DateTime
+  EndDate        DateTime
+  Status         String //Ongoing, completed  (could be derived from StartDate and EndDate)
+  Medications    Medications[]
+  TreatmentPlans Patient  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId      Int      
+  prescribe      Dentist  @relation(fields: [DentistSsn], references: [DentistSSN], onDelete: Cascade)
+  DentistSsn     String   
+  diagnosis      Diagnosis @relation(fields: [diagnosisId], references: [DiagnosisID], onDelete: Cascade)
+  diagnosisId    Int
+}
+
+model Medications {
+  id                     Int       @id @default(autoincrement())
+  name                   String
+  dosage                 Float
+  DosageUnit             String //ml, pills, gm
+  frequency              String //e.g. 3 times (a day, a week, every -- hrs,..)
+  MedicationsInTreatment Treatment? @relation(fields: [TreatmentId], references: [TreatmentID], onDelete: Cascade)
+  TreatmentId            Int?       
+}
+
+model ImagingResults {
+  id              Int   @id @default(autoincrement())
+  date            DateTime
+  type            String // X-Rays => Periapical, Bitewing, Cone Beam Computed Tomography (CBCT), Panoramic
+  imageUrl        String
+  DentistComments String
+  ImagingResults  Patient  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId       Int      @unique
+  DiagnosisImagingResults  Diagnosis  @relation(fields: [DiagnosisId], references: [DiagnosisID], onDelete: Cascade)
+  DiagnosisId     Int      @unique
+}
+
+model Dentist {
+  DentistSSN        String                @id @unique
+  fName             String
+  lName             String
+  birthDate         DateTime
+  age               Int
+  gender            String
+  address           String
+  phone             String
+  email             String
+  specialization    String
+  degree            String
+  dentistProfile    ProfileLogin?
+  workingDays       DentistWorkingDays[] //(e.g., "Monday", "Tuesday", etc.).
+  workingHours      DentistWorkingHours[] //"9:00 AM - 1:00 PM", "2:00 PM - 6:00 PM", etc
+  // yearsOfExperience Int
+  visits            Visit[]
+  // serviceProvidedBy Invoice[]
+  procedures        Procedure[]
+  diagnosis         Diagnosis[]
+  prescription      Treatment[]
+  personalImageURL  String?
+}
+
+model DentistWorkingDays {
+  day         String
+  WorkingDays Dentist  @relation(fields: [DentistSsn], references: [DentistSSN], onDelete: Cascade)
+  DentistSsn  String
+
+  @@id([DentistSsn, day])
+}
+
+model DentistWorkingHours {
+  shift        String
+  WorkingHours Dentist @relation(fields: [DentistSsn], references: [DentistSSN], onDelete: Cascade)
+  DentistSsn   String
+
+  @@id([DentistSsn, shift])
+}
+
+model Employee {
+  EmployeeSSN     String                 @id @unique
+  fName           String
+  lName           String
+  position        String //Here we go again -_-
+  birthDate       DateTime
+  age             Int
+  gender          String
+  // city            String
+  // street          String
+  address         String
+  phone           String
+  email           String
+  specialization  String
+  employeeProfile ProfileLogin?
+  workingDays     EmployeeWorkingDays[]//(e.g., "Monday", "Tuesday", etc.).
+  workingHours    EmployeeWorkingHours[]//"9:00 AM - 1:00 PM", "2:00 PM - 6:00 PM", etc
+  // itemsChecked    CheckedItems[]
+  // writtenInvoices Invoice[]
+  visits          Visit[]
+}
+
+model EmployeeWorkingDays {
+  day         String
+  WorkingDays Employee @relation(fields: [EmployeeSsn], references: [EmployeeSSN], onDelete: Cascade)
+  EmployeeSsn String   @unique
+}
+
+model EmployeeWorkingHours {
+  shift        String
+  WorkingHours Employee @relation(fields: [EmployeeSsn], references: [EmployeeSSN], onDelete: Cascade)
+  EmployeeSsn  String   @unique
+}
+
+model ProfileLogin {
+  LoginId         Int   @id @default(autoincrement())
+  username        String
+  password        String
+  userType        String
+  EmployeeProfile Employee? @relation(fields: [employeeSsn], references: [EmployeeSSN], onDelete: Cascade)
+  DentistProfile  Dentist?  @relation(fields: [dentistSsn], references: [DentistSSN], onDelete: Cascade)
+  PatientProfile  Patient?  @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  employeeSsn     String?   @unique
+  dentistSsn      String?   @unique
+  patientId       Int?      @unique
+}
+
+model Invoice {
+  BillingId         Int                @id @default(autoincrement())
+  Date              DateTime
+  // ProvidedServices  ServicesProvided[]
+  TotalCost         Float
+  Status            String              
+  visit             Visit               @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  visitId           Int                 @unique
+}
+
+model ServicesProvided {
+  ServiceName         String //Examination, consulatation
+  ServiceCost         Float
+  // ProvidedSerivceCost Invoice @relation(fields: [ServiceId], references: [BillingId])
+  ServiceId           Int     @unique 
+  Visit               Visit[]
+}
+
+model Item {
+  ItemID                Int                  @id @default(autoincrement())
+  Name                  String
+  Description           String
+  Manufacturer          String
+  Supplier              String
+  currentTotalQuantity  Int                 @default(0)
+  PurchaseDetails       ItemPurchaseDetails[]
+}
+
+model ItemPurchaseDetails {
+  PurchaseID    Int       @id @default(autoincrement())
+  item          Item      @relation(fields: [ItemID], references: [ItemID], onDelete: Cascade)
+  ItemID        Int
+  PurchaseDate  DateTime
+  Cost          Float
+  Quantity      Int
+}
+
+model Visit {
+  id             Int      @id @default(autoincrement())
+  date           DateTime
+  time           String
+  status         String //Scheduled, Completed, Cancelled
+  // reason         String    
+  Reserve        Patient?          @relation(fields: [patientId], references: [patientID], onDelete: Cascade)
+  patientId      Int?
+  Sets           Dentist?          @relation(fields: [dentistSsn], references: [DentistSSN], onDelete: Cascade)
+  dentistSsn     String?
+  Records        Employee?         @relation(fields: [employeeSsn], references: [EmployeeSSN], onDelete: Cascade)
+  employeeSsn    String?
+  invoice        Invoice?
+  Service        ServicesProvided @relation(fields: [serviceId], references: [ServiceId], onDelete: Cascade)
+  serviceId      Int
+  visitDiagnosis Diagnosis? @relation(fields: [diagnosisId], references: [DiagnosisID], onDelete: Cascade)
+  diagnosisId    Int?
+
+  //   // Service        ServicesProvided? @relation(fields: [serviceId], references: [ServiceId])
+  // serviceId      Int?
+  // visitDiagnosis Diagnosis? @relation(fields: [diagnosisId], references: [DiagnosisID])
+  // diagnosisId    Int?
+
+}
+
+model Procedure {
+  id             Int     @id @default(autoincrement())
+  name           String
+  description    String?
+  // cost           Float
+  ProceduresMade Dentist? @relation(fields: [DentistSsn], references: [DentistSSN], onDelete: Cascade)
+  DentistSsn     String?
+  DoneProcedures Patient? @relation(fields: [PatientId], references: [patientID], onDelete: Cascade)
+  PatientId      Int? 
+  diagnoseRelated     Diagnosis? @relation(fields: [diagnosisId], references: [DiagnosisID], onDelete: Cascade)
+  diagnosisId    Int?
+}

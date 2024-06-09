@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap");
+#name {
+  margin-bottom: 8%;
+}
+
+.login-input::placeholder {
+  /* UI Properties */
+  text-align: center;
+  font: italic normal normal 25px/30px Roboto;
+  letter-spacing: 0px;
+  color: #b8b8b8;
+  opacity: 1;
+}
+.login-input {
+  font: normal normal 25px/30px Roboto;
+  margin: auto;
+  text-align: center;
+  width: 100%;
+  height: 67px;
+  background: #ffffff 0% 0% no-repeat;
+  border-radius: 12px;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  -ms-border-radius: 12px;
+  -o-border-radius: 12px;
+}
+
+.nav_link {
+  text-decoration: none;
+  color: #2f9ba2;
+}
+
+.nav_link:hover {
+  cursor: pointer;
+  color: #868dfb;
+}

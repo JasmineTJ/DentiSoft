@@ -1,0 +1,54 @@
+{
+  "name": "dentisoft",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/icons-material": "^5.15.15",
+    "@mui/material": "^5.15.15",
+    "@mui/x-data-grid": "^7.3.0",
+    "@nivo/bar": "^0.85.1",
+    "@nivo/core": "^0.85.1",
+    "@nivo/line": "^0.86.0",
+    "@nivo/pie": "^0.85.1",
+    "apexcharts": "^3.49.1",
+    "axios": "^1.7.1",
+    "formik": "^2.4.6",
+    "react": "^18.3.1",
+    "react-apexcharts": "^1.4.1",
+    "react-dom": "^18.3.1",
+    "react-favicon": "^2.0.4",
+    "react-pro-sidebar": "^1.1.0",
+    "react-router-dom": "^6.23.0",
+    "react-router-hash-link": "^2.4.3",
+    "react-scripts": "5.0.1",
+    "react-scroll": "^1.9.0",
+    "react-widgets": "^5.8.4",
+    "yup": "^1.4.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
