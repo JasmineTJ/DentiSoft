@@ -1,7 +1,7 @@
 # E-clinic Dental Management System
 
 ## Overview
-DentiSoft is a web application designed to streamline dental appointment scheduling and management. The website serves three main user roles: Administrators, Doctors, and Patients, each with tailored functionalities.
+The E-clinic Dental Management system is a web application designed to streamline dental appointment scheduling and management. The website serves three main user roles: Administrators, Doctors, and Patients, each with tailored functionalities.
 
 ## Project: DentiSoft
 Our dental clinic system, DentiSoft, has significantly enhanced user experience and functionality. This README outlines the key features implemented, including login and registration processes, personalized user dashboards, data presentation, and accessibility options.
